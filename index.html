@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Feliz Aniversário, Wellington! - Street Fighter II Turbo (DOS)</title>
+    <!-- Fonte estilo fliperama clássico -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <!-- Importa o estilo do js-dos para a versão web -->
+    <link rel="stylesheet" href="https://v8.js-dos.com/latest/js-dos.css">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #050508;
+            overflow: hidden;
+            font-family: 'Press Start 2P', monospace;
+            color: #fff;
+        }
+
+        /* Tela de Boas-Vindas temática estilo Capcom / SF2 */
+        #welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0b0b1a 0%, #1a0808 50%, #050508 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 9999;
+            padding: 20px;
+            transition: opacity 1.2s ease-out, visibility 1.2s ease-out;
+            border: 8px solid #111;
+        }
+
+        #welcome-screen.fade-out {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .company-tag {
+            font-size: clamp(0.5rem, 1.5vw, 0.8rem);
+            color: #3498db;
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px #000;
+        }
+
+        .arcade-title {
+            font-size: clamp(1.2rem, 3.5vw, 2.2rem);
+            color: #f1c40f;
+            text-shadow: 4px 4px 0px #c0392b, 0 0 25px rgba(241, 196, 15, 0.4);
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
+
+        .birthday-banner {
+            background-color: #c0392b;
+            border: 3px solid #f1c40f;
+            padding: 12px 20px;
+            font-size: clamp(0.65rem, 1.8vw, 0.95rem);
+            color: #fff;
+            margin-bottom: 35px;
+            box-shadow: 0 4px 0 #78281f;
+            transform: rotate(-1deg);
+        }
+
+        .start-btn {
+            background-color: #f1c40f;
+            color: #2c3e50;
+            border: 4px solid #fff;
+            padding: 16px 28px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(0.75rem, 2vw, 1.1rem);
+            cursor: pointer;
+            box-shadow: 0 6px 0 #7f6000, 0 0 20px rgba(241, 196, 15, 0.6);
+            transition: transform 0.1s, box-shadow 0.1s, background-color 0.2s;
+            animation: blinkCoin 1.2s infinite;
+        }
+
+        .start-btn:hover {
+            background-color: #f39c12;
+        }
+
+        .start-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #7f6000;
+        }
+
+        .hint-text {
+            font-size: clamp(0.45rem, 1.2vw, 0.65rem);
+            color: #888;
+            margin-top: 25px;
+        }
+
+        /* Container do Jogo (DOSBox) */
+        #game-wrapper {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #game-container {
+            width: 640px;
+            height: 400px;
+            max-width: 100%;
+            max-height: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+
+        @keyframes blinkCoin {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Frame 1: Tela de Apresentação Temática -->
+    <div id="welcome-screen">
+        <div class="company-tag">SUPER STREET FIGHTER II TURBO - PC EDITION</div>
+        <div class="arcade-title">PRESENTE ESPECIAL DO SEU<br><span style="color: #e74c3c; text-shadow: 4px 4px 0px #f1c40f;">IRMÃO CAGÃO</span></div>
+        
+        <div class="birthday-banner">
+            ⭐ FELIZ ANIVERSÁRIO, TONTON! ⭐
+        </div>
+
+        <button class="start-btn" id="play-btn" onclick="iniciarPresente()">CLICA AQUI OU PERTE ENTER, APÓS DIGITA SF2TURBO NO DOS</button>
+        <div class="hint-text">Toque na tela ou aperte Enter/Espaço e digite sf2turbo</div>
+    </div>
+
+    <!-- Frame 2: Emulador DOS -->
+    <div id="game-wrapper">
+        <div id="game-container"></div>
+    </div>
+
+    <!-- Importa o script do js-dos -->
+    <script src="https://v8.js-dos.com/latest/js-dos.js"></script>
+    <script>
+        let jogoIniciado = false;
+        let dosInstance = null;
+
+        function iniciarPresente() {
+            if (jogoIniciado) return;
+            jogoIniciado = true;
+
+            // 1. Aplica o fade-out na tela de boas-vindas
+            const screen = document.getElementById('welcome-screen');
+            screen.classList.add('fade-out');
+
+            // 2. Inicializa o emulador de DOS com autoStart ativado para rodar o autoexec sozinho
+            Dos(document.getElementById("game-container"), {
+                url: "DOS3.zip", 
+                autoStart: true
+            }).then(function (ci) {
+                dosInstance = ci;
+            });
+        }
+
+        // Ouve se o usuário apertou Enter ou Espaço no teclado para iniciar
+        window.addEventListener('keydown', function(event) {
+            if (!jogoIniciado && (event.key === 'Enter' || event.key === ' ')) {
+                event.preventDefault(); 
+                iniciarPresente();
+            }
+        });
+    </script>
+
+</body>
+</html>
