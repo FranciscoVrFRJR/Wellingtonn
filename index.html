@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Feliz Aniversário, Wellington! - Street Fighter II Turbo (DOS)</title>
+    <title>Feliz Aniversário, Wellington! - Street Fighter II Turbo</title>
     <!-- Fonte estilo fliperama clássico -->
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <!-- Importa o estilo do js-dos -->
-    <link rel="stylesheet" href="https://v8.js-dos.com/latest/js-dos.css">
     <style>
         * {
             box-sizing: border-box;
@@ -23,7 +21,7 @@
             color: #fff;
         }
 
-        /* Tela de Boas-Vindas temática com fadeout bem suave (2.5s) */
+        /* Tela de Boas-Vindas temática estilo Capcom / SF2 */
         #welcome-screen {
             position: fixed;
             top: 0;
@@ -38,7 +36,7 @@
             text-align: center;
             z-index: 9999;
             padding: 20px;
-            transition: opacity 2.5s ease-out, visibility 2.5s ease-out;
+            transition: opacity 1.2s ease-out, visibility 1.2s ease-out;
             border: 8px solid #111;
         }
 
@@ -103,7 +101,7 @@
             margin-top: 25px;
         }
 
-        /* Container do Jogo (DOSBox) fica escondido embaixo */
+        /* Container do Jogo */
         #game-wrapper {
             width: 100%;
             height: 100%;
@@ -113,11 +111,10 @@
         }
 
         #game-container {
-            width: 640px;
-            height: 400px;
-            max-width: 100%;
-            max-height: 100%;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            width: 100%;
+            height: 100%;
+            max-width: 900px;
+            max-height: 675px;
         }
 
         @keyframes blinkCoin {
@@ -128,56 +125,83 @@
 </head>
 <body>
 
-    <!-- Frame 1: Tela de Apresentação Temática (Fica por cima) -->
-    <div id="welcome-screen">
-        <div class="company-tag">SUPER STREET FIGHTER II TURBO - PC EDITION</div>
-        <div class="arcade-title">PRESENTE ESPECIAL DO SEU<br><span style="color: #e74c3c; text-shadow: 4px 4px 0px #f1c40f;">IRMÃO CAGÃO</span></div>
+    <!-- Frame 1: Tela de Apresentação Temática -->
+    <div id="welcome-screen" onclick="iniciarPresente()">
+        <div class="company-tag">PRESENTE ESPECIAL PARA UM FÃ DE CLÁSSICOS</div>
+        <div class="arcade-title">SUPER STREET FIGHTER II<br><span style="color: #e74c3c; text-shadow: 4px 4px 0px #f1c40f;">TURBO EDITION</span></div>
         
         <div class="birthday-banner">
-            ⭐ FELIZ ANIVERSÁRIO, TONTON! ⭐
+            ⭐ FELIZ ANIVERSÁRIO, WELLINGTON! ⭐
         </div>
 
-        <button class="start-btn" id="play-btn" onclick="iniciarPresente()">PRESSIONE ENTER OU CLIQUE AQUI</button>
-        <div class="hint-text">Toque na tela ou aperte Enter/Espaço para iniciar</div>
+        <button class="start-btn" id="play-btn">PRESS START [ ENTER / ESPAÇO ]</button>
+        <div class="hint-text">Toque na tela ou aperte Enter/Espaço para jogar</div>
     </div>
 
-    <!-- Frame 2: Emulador DOS (Fica rodando por baixo) -->
+    <!-- Frame 2: Emulador Arcade -->
     <div id="game-wrapper">
         <div id="game-container"></div>
     </div>
 
-    <!-- Importa o script do js-dos -->
-    <script src="https://v8.js-dos.com/latest/js-dos.js"></script>
     <script>
-        let emuladorIniciado = false;
+        let jogoIniciado = false;
 
-        // Inicia o emulador imediatamente em segundo plano assim que a página abre
-        window.addEventListener('load', function() {
-            Dos(document.getElementById("game-container"), {
-                url: "SS.zip", 
-                autoStart: true
-            });
-        });
-
-        function iniciarPresente() {
-            if (emuladorIniciado) return;
-            emuladorIniciado = true;
-
-            // Muda o texto do botão para dar feedback visual
-            const btn = document.getElementById('play-btn');
-            btn.style.animation = 'none';
-            btn.innerText = "CARREGANDO LUTA...";
-
-            // Dispara o fade-out bem lento (2.5 segundos) que esconde a tela de boas-vindas
-            // revelando gradualmente o emulador que já está carregando/rodando por baixo
-            const screen = document.getElementById('welcome-screen');
-            screen.classList.add('fade-out');
+        function forcarFocoNoJogo() {
+            const canvas = document.querySelector('#game-container canvas');
+            if (canvas) {
+                canvas.setAttribute('tabindex', '0');
+                canvas.focus();
+            }
+            window.focus();
         }
 
-        // Atalho de teclado para o Enter ou Espaço
+        function iniciarPresente() {
+            if (jogoIniciado) return;
+            jogoIniciado = true;
+
+            // Remove o foco do botão para não interceptar Enter/Espaço depois
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
+
+            // 1. Aplica o fade-out e remove a tela de boas-vindas completamente
+            const screen = document.getElementById('welcome-screen');
+            screen.classList.add('fade-out');
+            setTimeout(() => {
+                screen.style.display = 'none';
+            }, 1200);
+
+            // 2. Configura o EmulatorJS
+            window.EJS_player = "#game-container";
+            window.EJS_core = "fbneo";
+            window.EJS_gameUrl = "ssf2t.zip"; // Nome exato do seu arquivo ROM no repositório
+            window.EJS_pathtodata = "https://cdn.emulatorjs.org/stable/data/";
+            window.EJS_startOnLoaded = true;
+            
+            // Força a interface de desktop e garante foco quando o jogo iniciar
+            window.EJS_VirtualGamepadSettings = []; 
+            window.EJS_onGameStart = function() {
+                forcarFocoNoJogo();
+                setTimeout(forcarFocoNoJogo, 500);
+            };
+
+            // 3. Injeta o script do EmulatorJS
+            const script = document.createElement('script');
+            script.src = "https://cdn.emulatorjs.org/stable/data/loader.js";
+            document.body.appendChild(script);
+        }
+
+        // Garante que qualquer clique na tela devolva o foco ao emulador
+        document.addEventListener('click', function() {
+            if (jogoIniciado) {
+                forcarFocoNoJogo();
+            }
+        });
+
+        // Ouve Enter ou Espaço APENAS enquanto o jogo ainda não iniciou
         window.addEventListener('keydown', function(event) {
-            if (!emuladorIniciado && (event.key === 'Enter' || event.key === ' ')) {
-                event.preventDefault(); 
+            if (!jogoIniciado && (event.key === 'Enter' || event.key === ' ')) {
+                event.preventDefault();
                 iniciarPresente();
             }
         });
@@ -185,3 +209,4 @@
 
 </body>
 </html>
+```[cite: 1]
